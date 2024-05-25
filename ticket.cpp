@@ -67,8 +67,8 @@ std::ostream& operator<<(std::ostream &os, const Ticket &ticket){
     return os;
 }
 
-void Ticket::serializeTicket() {
-    std::ofstream outfile("ticket.txt", std::ios::app); // Open file for writing
+void Ticket::serializeTicket(const std::string &filename) {
+    std::ofstream outfile(filename , std::ios::app); // Open file for writing
 
     if (outfile.is_open() && !outfile.eof()) {
         outfile << id << std::endl; // Ticket ID

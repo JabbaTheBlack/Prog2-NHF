@@ -15,8 +15,6 @@ add_executable(NH main.cpp
         schedule.cpp
         train.h
         train.cpp
-        menu.h
-        menu.cpp
         ticket.h
         ticket.cpp
         ticketSystem.h

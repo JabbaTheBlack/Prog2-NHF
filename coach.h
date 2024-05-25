@@ -30,11 +30,23 @@ public:
         }
     }
 
-    /**
-     * @brief Get a pointer to the array of seats in the coach.
-     *
-     * @return Seat* Pointer to the array of seats.
-     */
+    Coach(const Coach &coach);
+    Coach& operator=(const Coach&);
+    Coach(Coach&& other) noexcept
+            : coachNumber(other.coachNumber), seats(other.seats),
+              numSeats(other.numSeats), isBooked(other.isBooked) {
+        other.seats = nullptr;
+        other.numSeats = 0;
+        other.isBooked = false;
+    }
+
+    Coach& operator=(Coach&& other) noexcept;
+
+        /**
+         * @brief Get a pointer to the array of seats in the coach.
+         *
+         * @return Seat* Pointer to the array of seats.
+         */
     Seat *getSeats();
 
     /**
@@ -69,6 +81,20 @@ public:
      * @return size_t The total number of seats.
      */
     size_t getNumSeats() const;
+
+    /**
+     * @brief Serialize the coach data to a file.
+     *
+     * @param filename The name of the file to write the data to.
+     */
+    void serialize(const std::string &filename) const;
+
+    /**
+     * @brief Deserialize the coach data from a file.
+     *
+     * @param filename The name of the file to read the data from.
+     */
+    void deserialize(const std::string &filename);
 
     /**
      * @brief Destroy the Coach object and deallocate memory for seats.

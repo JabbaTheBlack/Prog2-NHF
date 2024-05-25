@@ -127,7 +127,23 @@ public:
     /**
      * @brief Serializes the train data to a file.
      */
-    void serializeTrain(const std::string& filename);
+    void serialize(const std::string &filename);
+
+    ~Train(){
+        Node<Coach*> *coachNode = coaches.begin();
+        while (coachNode != nullptr) {
+            delete coachNode->getData();
+            coachNode = coachNode->getNext();
+        }
+        delete coachNode;
+
+        Node<Schedule*> *scheduleNode = schedules.begin();
+        while (scheduleNode != nullptr) {
+            delete scheduleNode->getData();
+            scheduleNode = scheduleNode->getNext();
+        }
+        delete coachNode;
+    }
 
 };
 

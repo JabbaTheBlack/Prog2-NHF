@@ -1,3 +1,4 @@
+#include <sstream>
 #include "schedule.h"
 #include "memtrace.h"
 
@@ -64,3 +65,44 @@ std::ostream& operator<<(std::ostream &os, const Schedule &schedule) {
     return os;
 }
 
+
+void Schedule::serialize(std::ofstream &outfile) const {
+    outfile << departure << std::endl // Departure station
+            << destination << std::endl // Destination station
+            << departureTime << std::endl // Departure time
+            << arrivalTime << std::endl << std::endl; // Arrival time
+}
+
+void Schedule::deserialize(std::ifstream &infile) {
+    std::string departure;
+    std::string destination;
+    std::string line;
+    Time departureTime;
+    Time arrivalTime;
+    int hours = 0, minutes = 0;
+
+    // Read data from file
+    std::getline(infile, departure);
+    std::getline(infile, destination);
+
+    std::getline(infile, line);
+    std::stringstream ss(line);
+
+    ss >> hours;
+    ss.ignore(1); // Skip colon (':')
+    ss >> minutes;
+    departureTime = Time(hours, minutes);
+
+    std::getline(infile, line);
+    std::stringstream ss2(line);
+    ss2 >> hours;
+    ss2.ignore(1); // Skip colon (':')
+    ss2 >> minutes;
+    arrivalTime = Time(hours, minutes);
+
+    // Set the read data to the Schedule object
+    setDeparture(departure);
+    setDestination(destination);
+    setDepartureTime(departureTime);
+    setArrivalTime(arrivalTime);
+}

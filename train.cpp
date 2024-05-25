@@ -68,7 +68,49 @@ std::ostream& operator<<(std::ostream &os, Train &train){
     return os;
 }
 
-void Train::serializeTrain(const std::string& filename){
+
+void Train::serialize(const std::string &filename){
+    std::ofstream outfile(filename, std::ios::app); // Open file for appending
+
+    if(outfile.is_open()){
+        outfile << "Train:\n"
+                << id << std::endl // Train ID
+                << name << std::endl // Train Name
+                << type << std::endl // Train Type
+                << (isBooked ? 0 : 1) << std::endl << std::endl; // Is Booked
+
+        // Write schedules information if available
+        if (schedules[0] != nullptr) {
+            outfile << "Schedules:\n";
+            for (Node<Schedule*>* scheduleNode = schedules.begin(); scheduleNode != nullptr; scheduleNode = scheduleNode->getNext()) {
+                Schedule* schedule = scheduleNode->getData();
+                schedule->serialize(outfile); // Serialize schedule
+            }
+        }
+
+        // Write coaches information if available
+        if (coaches[0] != nullptr) {
+            outfile << "Coaches:\n";
+            for (Node<Coach*>* coachNode = coaches.begin(); coachNode != nullptr; coachNode = coachNode->getNext()) {
+                Coach* coach = coachNode->getData();
+                outfile << coach->getCoachNumber() << std::endl // Coach Number
+                        << coach->getNumSeats() << std::endl << std::endl; // Number of seats
+
+                coach->serialize(filename); // Serialize coach
+            }
+        }
+
+        outfile << std::endl << std::endl;
+        outfile.close();
+    } else {
+        throw "Error opening file\n";
+    }
+}
+
+
+/*
+
+void Train::serializeTrain(const std::string &filename){
     std::ofstream outfile(filename, std::ios::app); // Open file for appending
 
     if(outfile.is_open()){
@@ -112,3 +154,4 @@ void Train::serializeTrain(const std::string& filename){
         throw"Error opening file\n";
     }
 }
+*/

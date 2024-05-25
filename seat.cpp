@@ -25,3 +25,4 @@ bool Seat::operator==(const Seat &seat) const{
 int Seat::getSeatNumber() const{
     return seatNumber;
 }
+

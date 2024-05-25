@@ -64,13 +64,28 @@ public:
     /**
     * @brief Deserializes train data from a file.
     */
-    void desirializeTrain();
+    void desirializeTrain(TicketSystem &ticketSystem, const std::string &filename);
 
     /**
      * @brief Deserializes ticket data from a file.
      */
-    void deserializeTicket();
+    void deserializeTicket(TicketSystem &ticketSystem, const std::string &filename);
 
+    ~TicketSystem(){
+        // Delete all trains
+        Node<Train*> *trainNode = trains.begin();
+        while (trainNode != nullptr) {
+            delete trainNode->getData();
+            trainNode = trainNode->getNext();
+        }
+
+        // Delete all tickets
+        Node<Ticket*> *ticketNode = tickets.begin();
+        while (ticketNode != nullptr) {
+            delete ticketNode->getData();
+            ticketNode = ticketNode->getNext();
+        }
+    };
 
 };
 

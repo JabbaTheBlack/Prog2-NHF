@@ -1,0 +1,11 @@
+1
+Budapest
+Vienna
+9:0
+10:0
+456
+Morning Express
+InterCity
+2
+2
+0.7

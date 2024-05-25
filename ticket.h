@@ -94,7 +94,7 @@ public:
     /**
      * @brief Serializes the ticket information to a file.
      */
-    void serializeTicket();
+    void serializeTicket(const std::string &filename);
 
 
 };

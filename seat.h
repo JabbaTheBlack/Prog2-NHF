@@ -50,6 +50,7 @@ public:
     * @return The seat number.
     */
     int getSeatNumber() const;
+
 };
 
 #endif //NH_SEAT_H

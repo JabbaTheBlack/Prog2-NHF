@@ -1,339 +1,218 @@
+#include "ticketSystem.h"
+#include <iostream>
 #include <limits>
-#include "menu.h"
 
-void TicketsMenu::displayMenu() {
-    std::cout << "Tickets Menu:\n";
-    std::cout << "1. Issue Ticket\n";
-    std::cout << "2. Remove Ticket\n";
-    std::cout << "3. Exit to Main Menu\n";
+// Function declarations
+void displayMenu();
+void handleUserInput(TicketSystem &ticketSystem, bool &exitFlag);
+int getChoice();
+void addTrain(TicketSystem &ticketSystem);
+void searchTrain(TicketSystem &ticketSystem);
+void removeTrain(TicketSystem &ticketSystem);
+
+void displayMenu() {
+    std::cout << "Main Menu:\n";
+    std::cout << "1. Tickets\n";
+    std::cout << "2. Trains\n";
+    std::cout << "3. Schedules\n";
+    std::cout << "4. Exit\n";
 }
 
-void TicketsMenu::handleUserInput() {
-    int choice;
+void displayTrainsMenu(){
+    std::cout<<"1. Add Train\n";
+    std::cout<<"2. Search Train\n";
+    std::cout<<"3. Remove Train\n";
+}
+
+void displayTrainsSubMenu(){
+    std::cout<<"1. Add Coach\n";
+    std::cout<<"2. Remove Coach\n";
+    std::cout<<"3. Add Schedule\n";
+    std::cout<<"4. Remove Schedule\n";
+}
+
+void handleUserInput(TicketSystem &ticketSystem, bool &exitFlag) {
     std::cout << "Enter your choice: ";
-    std::cin >> choice;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    int choice = getChoice();
 
     switch (choice) {
         case 1: {
-            std::string departure, destination;
-            int hours, minutes;
-            std::cout << "Enter departure station: ";
-            std::getline(std::cin, departure);
 
-            std::cout << "Enter destination station: ";
-            std::getline(std::cin, destination);
-
-            std::cout << "Please enter departure time (hour minute): ";
-            std::cin >> hours >> minutes;
-
-            Time departureTime(hours, minutes);
-            Schedule schedule(departure, destination);
-
-            ticketSystem.issueTicket(schedule, departureTime);
             break;
         }
+        //Kész
         case 2: {
-            int id;
-            std::cout << "Enter ticket's id: \n";
-            cin>>id;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            displayTrainsMenu();
+            std::cout << "Enter your choice: ";
+            int choice = getChoice();
 
-            ticketSystem.removeTicket(id);
+            switch(choice){
+                case 1:{
+                    addTrain(ticketSystem);
+                    break;}
 
-            std::cout << "Ticket has been deleted\n";
+                case 2:{
+                    searchTrain(ticketSystem);
+                    break;
+                }
+                case 3:
+                    removeTrain(ticketSystem);
+                    break;
+            }
             break;
         }
-        case 3:
+        case 3: {
+
             break;
-        default:
-            std::cout << "Invalid choice. Please enter a number between 1 and 4.\n";
+        }
+        case 4: {
+            exitFlag = true;
+
             break;
+        }
+        default: {
+            std::cout << "Invalid choice. Please try again.\n";
+            break;
+        }
     }
 }
 
 
-void TicketsMenu::executeAction() {
-    // Execute action for Tickets Menu
-}
-
-void TrainsMenu::displayMenu() {
-    std::cout << "Trains Menu:\n";
-    std::cout << "1. Add Train\n";
-    std::cout << "2. Search Train\n";
-    std::cout << "3. Remove Train\n";
-}
-
-void TrainsMenu::handleUserInput() {
+int getChoice() {
     int choice;
-    std::cout << "Enter your choice: ";
-    std::cin >> choice;
-    std::cin.ignore();
+    while (true) {
+        std::cin >> choice;
+
+        if (std::cin.fail()) {
+            // Clear the error flag on cin
+            std::cin.clear();
+            // Ignore the rest of the input until a newline is found
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid input, please enter a number.\n";
+        } else {
+            // Ignore the rest of the input until a newline is found (to prevent issues with leftover characters)
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return choice;
+        }
+    }
+}
+
+void addTrain(TicketSystem &ticketSystem){
+    std::string name, type;
+    std::cout << "Enter train's name: ";
+    std::getline(std::cin, name);
+    std::cout << "Enter train's type: ";
+    std::getline(std::cin, type);
+    int trainId = ticketSystem.getTrains().getSize() + 1;
+    Train* train = new Train(trainId, name, type);
+    ticketSystem.addTrain(*train);
+    std::cout << "Train added with ID: " << trainId << std::endl;
+}
+
+void searchTrain(TicketSystem &ticketSystem){
+    int choice;
+    std::cout<<"Enter train's id:\n";
+    int id = getChoice();
+
+    Train *searchedTrain = ticketSystem.searchTrain(id);
+
+    if(searchedTrain == nullptr){
+        return;
+    }
+
+    displayTrainsSubMenu();
+
+    choice = getChoice();
 
     switch(choice){
-        case 1: {
-            string name, type;
-            std::cout<<"Enter train's name: \n";
-            std::getline(std::cin, name);
+        case 1:{
+            int coachNumber, numSeats;
+            std::cout<<"Enter coach's number:\n";
+            coachNumber = getChoice();
 
-            std::cout<<"Enter train's type: \n";
-            std::getline(std::cin, type);
+            std::cout<<"Enter the number of seats the coach has:\n";
+            numSeats = getChoice();
 
-            Train train(ticketSystem.getTrains().getSize() + 1, name ,type);
-            ticketSystem.addTrain(train);
+            Coach *coach = new Coach(coachNumber, numSeats);
 
-            std::cout<<"Train's id: "<<ticketSystem.getTrains().getSize()<<std::endl;
+            searchedTrain->addCoach(*coach);
             break;
         }
-        case 2: {
-            int id;
-            std::cout << "Enter train's id:\n";
-            std::cin >> id;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        case 2:{
+            std::cout<<"Enter coach number:\n";
+            int coachNumber = getChoice();
 
-            Train *searchedTrain = ticketSystem.searchTrain(id);
-
-            if (searchedTrain != nullptr) {
-                int subChoice;
-                std::cout << "(1) Add schedule\n";
-                std::cout << "(2) Remove schedule\n";
-                std::cout << "(3) Add Carriage\n";
-                std::cout << "(4) Remove Carriage\n";
-                std::cout << "Enter your choice: ";
-                std::cin >> subChoice;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                switch (subChoice) {
-                    case 1: {
-                        std::string departure, destination;
-                        int depHour, depMinute, arrHour, arrMinute;
-
-                        std::cout << "Enter departure station: ";
-                        std::getline(std::cin, departure);
-
-                        std::cout << "Enter destination station: ";
-                        std::getline(std::cin, destination);
-
-                        std::cout << "Enter departure time (hour minute): ";
-                        std::cin >> depHour >> depMinute;
-
-                        std::cout << "Enter arrival time (hour minute): ";
-                        std::cin >> arrHour >> arrMinute;
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                        Time departureTime(depHour, depMinute);
-                        Time arrivalTime(arrHour, arrMinute);
-                        Schedule newSchedule(departure, destination, departureTime, arrivalTime);
-
-                        searchedTrain->addSchedule(newSchedule);
-                        std::cout << "Schedule added successfully\n";
-                        break;
-                    }
-                    case 2: {
-                        std::string departure;
-                        int depHour, depMinute;
-
-                        std::cout << "Enter departure station of schedule to remove: ";
-                        std::getline(std::cin, departure);
-
-                        std::cout << "Enter departure time of schedule to remove (hour minute): ";
-                        std::cin >> depHour >> depMinute;
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                        Time departureTime(depHour, depMinute);
-                        Schedule* scheduleToRemove = nullptr;
-
-                        for (auto& schedule : searchedTrain->getSchedule()) {
-                            if (schedule.getData()->getDeparture() == departure &&
-                                schedule.getData()->getDepartureTime() == departureTime) {
-                                scheduleToRemove = schedule.getData();
-                                break;
-                            }
-                        }
-
-                        if (scheduleToRemove) {
-                            searchedTrain->removeSchedule(*scheduleToRemove);
-                            std::cout << "Schedule removed successfully\n";
-                        } else {
-                            std::cout << "Schedule not found\n";
-                        }
-                        break;
-                    }
-                    case 3: {
-                        int coachNumber, seatCount;
-
-                        std::cout << "Enter coach number: ";
-                        std::cin >> coachNumber;
-
-                        std::cout << "Enter number of seats: ";
-                        std::cin >> seatCount;
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                        Coach newCoach(coachNumber, seatCount);
-                        searchedTrain->addCoach(newCoach);
-                        std::cout << "Coach added successfully\n";
-                        break;
-                    }
-                    case 4: {
-                        int coachNumber;
-
-                        std::cout << "Enter coach number to remove: ";
-                        std::cin >> coachNumber;
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                        Coach* coachToRemove = nullptr;
-                        for (auto& coach : searchedTrain->getCoaches()) {
-                            if (coach.getData()->getCoachNumber() == coachNumber) {
-                                coachToRemove = coach.getData();
-                                break;
-                            }
-                        }
-
-                        if (coachToRemove) {
-                            searchedTrain->removeCoach(*coachToRemove);
-                            std::cout << "Coach removed successfully\n";
-                        } else {
-                            std::cout << "Coach not found\n";
-                        }
-                        break;
-                    }
-                    default:
-                        std::cout << "Invalid choice. Please enter a valid number.\n";
-                        break;
+            for(size_t i = 0; i < searchedTrain->getCoaches().getSize(); i++){
+                if(searchedTrain->getCoaches()[i]->getData()->getCoachNumber() == coachNumber){
+                    Coach *coach = searchedTrain->getCoaches()[i]->getData();
+                    searchedTrain->removeCoach(*coach);
+                    delete coach;
                 }
-            } else {
-                std::cout << "Train not found" << std::endl;
             }
             break;
         }
-        case 3:
-            int id;
-            std::cout<<"Enter train's id:\n";
-            std::cin>>id;
 
-            ticketSystem.removeTrain(id);
-            std::cout<<"Train has been removed\n";
+        case 3:{
+            std::string departure, destination;
+            Time departureTime, arrivalTime;
+
+            std::cout<<"Enter Departure:\n";
+            std::getline(std::cin, departure);
+            std::cout<<"Enter Destination:\n";
+            std::getline(std::cin, destination);
+
+            std::cout<<"Enter departure time (h m)\n";
+            cin>>departureTime;
+
+            std::cout<<"Enter arrival time (h m)\n";
+            cin>>arrivalTime;
+
+            Schedule *schedule = new Schedule(departure, destination, arrivalTime, departureTime);
+
+            searchedTrain->addSchedule(*schedule);
             break;
-    }
-
-}
-
-void TrainsMenu::executeAction() {
-    // Execute action for Trains Menu
-}
-
-void ScheduleMenu::displayMenu() {
-    std::cout << "Schedule Menu:\n";
-    std::cout << "Search Train Schedule\n";
-}
-
-void ScheduleMenu::handleUserInput() {
-    std::string station;
-    std::cout << "Enter station's name:\n";
-    std::getline(std::cin, station);
-    std::cin.ignore();
-
-    LinkedList<int> incomingTrains;
-    LinkedList<int> outgoingTrains;
-
-    auto contains = [](const LinkedList<int>& list, int id) {
-        for (Node<int>* node = list.begin(); node != nullptr; node = node->getNext()) {
-            if (node->getData() == id) {
-                return true;
-            }
         }
-        return false;
-    };
 
-    // Iterate through all trains
-    for (Node<Train*>* trainNode = ticketSystem.getTrains().begin(); trainNode != nullptr; trainNode = trainNode->getNext()) {
-        Train* train = trainNode->getData();
+        case 4:{
+            std::string departure, destination;
 
-        // Iterate through all schedules of the current train
-        for (Node<Schedule*>* scheduleNode = train->getSchedule().begin(); scheduleNode != nullptr; scheduleNode = scheduleNode->getNext()) {
-            Schedule* schedule = scheduleNode->getData();
+            std::cout<<"Enter train's departure:\n";
+            std::getline(std::cin, departure);
+            std::cout<<"Enter train's destination\n";
+            std::getline(std::cin, destination);
 
-            // Check for outgoing trains
-            if (schedule->getDeparture() == station && !contains(outgoingTrains, train->getId())) {
-                outgoingTrains.insert(train->getId());
+            Node<Schedule*> *scheduleNode = searchedTrain->getSchedule().begin();
+            while (scheduleNode != nullptr) {
+
+                if(scheduleNode->getData()->getDeparture() == departure && scheduleNode->getData()->getDestination() == destination){
+                    Schedule *curr = scheduleNode->getData();
+                    searchedTrain->removeSchedule(*curr);
+                    break;
+                }
+                scheduleNode = scheduleNode->getNext();
             }
-
-            // Check for incoming trains
-            if (schedule->getDestination() == station && !contains(incomingTrains, train->getId())) {
-                incomingTrains.insert(train->getId());
-            }
+            delete scheduleNode;
+            break;
         }
-    }
 
-    // Print outgoing trains
-    std::cout << "Outgoing trains from " << station << ":\n";
-    for (Node<int>* node = outgoingTrains.begin(); node != nullptr; node = node->getNext()) {
-        std::cout << "Train ID: " << node->getData() << std::endl;
-    }
 
-    // Print incoming trains
-    std::cout << "Incoming trains to " << station << ":\n";
-    for (Node<int>* node = incomingTrains.begin(); node != nullptr; node = node->getNext()) {
-        std::cout << "Train ID: " << node->getData() << std::endl;
-    }
-
-}
-
-void ScheduleMenu::executeAction() {
-    // Execute action for Schedule Menu
-}
-
-void ExitMenu::displayMenu() {
-    std::cout << "Exiting...\n";
-}
-
-void ExitMenu::handleUserInput() {
-
-    for(size_t i = 0; i < ticketSystem.getTickets().getSize(); i++){
-       ticketSystem.getTickets()[i]->getData()->serializeTicket();
-    }
-
-    for(size_t i = 0; i < ticketSystem.getTrains().getSize(); i++){
-        ticketSystem.getTrains()[i]->getData()->serializeTrain("train.txt");
-    }
-
-    std::exit(0);
-}
-
-void ExitMenu::executeAction() {
-    // Execute action for Exit Menu
-}
-
-void MainMenu::addSubMenu(Menu* subMenu, int index) {
-    if (index >= 0 && index < 4) {
-        subMenus[index] = subMenu;
     }
 }
 
-void MainMenu::displayMenu() {
-    std::cout << "Main Menu:\n";
-    for (int i = 0; i < 4; ++i) {
-        if (subMenus[i] != nullptr) {
-            std::cout << (i + 1) << ". " << subMenus[i]->getTitle() << std::endl;
-        }
+void removeTrain(TicketSystem &ticketSystem){
+    std::cout<<"Enter train's id:\n";
+    int id = getChoice();
+
+    Train *searchedTrain = ticketSystem.searchTrain(id);
+
+    if(searchedTrain == nullptr){
+        return;
     }
+
+    ticketSystem.removeTrain(searchedTrain->getId());
+    std::cout<<"Train has been removed\n";
 }
 
-void MainMenu::handleUserInput() {
+void listSchedule(TicketSystem &ticketSystem){
 
-    int choice;
-    std::cout << "Enter your choice: ";
-    std::cin >> choice;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    if (choice >= 1 && choice <= 4 && subMenus[choice - 1] != nullptr) {
-        subMenus[choice - 1]->displayMenu();
-        subMenus[choice - 1]->handleUserInput();
-        subMenus[choice - 1]->executeAction();
-    } else {
-        std::cout << "Invalid choice. Please enter a number between 1 and 4.\n";
-    }
-}
-
-void MainMenu::executeAction() {
-    // No action for main menu, just navigate to submenus
 }

@@ -5,6 +5,7 @@
 
 using namespace std;
 
+#include <fstream>
 #include "time.h"
 #include "memtrace.h"
 
@@ -58,6 +59,10 @@ public:
     void setArrivalTime(const Time &arrivalTime); /**< Set the arrival time. */
     void setDepartureTime(const Time &departureTime); /**< Set the departure time. */
     void setLatency(int latency); /**< Set the latency. */
+
+
+    void serialize(std::ofstream &outfile) const;
+    void deserialize(std::ifstream &infile);
 
 };
 

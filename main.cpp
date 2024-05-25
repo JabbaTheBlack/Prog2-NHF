@@ -7,7 +7,8 @@
 #include "train.h"
 #include "memtrace.h"
 #include "ticketSystem.h"
-#include "menu.h"
+//#include "menu.cpp"
+
 
 #include <iostream>
 #include <cassert>
@@ -109,6 +110,7 @@ void testCoach() {
     }
     // Check the updated state
     assert(coach.getBooked() == true);
+    coach.serialize("coach.txt");
 }
 
 
@@ -147,6 +149,10 @@ void testSchedule() {
     // Printing modified schedule details
     std::cout<<std::endl<<schedule;
     std::cout<<"Schedule: all test passed\n\n";
+    std::ofstream outfile("schedule.txt", std::ios::app);
+    std::ifstream infile("schedule.txt");
+    schedule.serialize(outfile);
+    schedule.deserialize(infile);
 }
 
 
@@ -155,88 +161,95 @@ void testSchedule() {
  * @brief function to test the train class
  */
 void testTrain() {
+    // Create a ticket system
+    TicketSystem ticketSystem;
+
     // Create a train object
-    Train train(123, "Night Express", "Sebesvonat", false);
+    Train *train = new Train(123, "Night Express", "Sebesvonat", false);
+    ticketSystem.addTrain(*train);
 
     // Test getId() method
-    assert(train.getId() == 123);
+    assert(train->getId() == 123);
 
     // Test getName() method
-    assert(train.getName() == "Night Express");
+    assert(train->getName() == "Night Express");
 
     // Test getType() method
-    assert(train.getType() == "Sebesvonat");
+    assert(train->getType() == "Sebesvonat");
 
     // Test getBooked() method
-    assert(train.getBooked() == false);
+    assert(train->getBooked() == false);
 
     // Test setId() method
-    train.setId(456);
-    assert(train.getId() == 456);
+    train->setId(456);
+    assert(train->getId() == 456);
 
     // Test setName() method
-    train.setName("Morning Express");
-    assert(train.getName() == "Morning Express");
+    train->setName("Morning Express");
+    assert(train->getName() == "Morning Express");
 
     // Test setType() method
-    train.setType("InterCity");
-    assert(train.getType() == "InterCity");
+    train->setType("InterCity");
+    assert(train->getType() == "InterCity");
 
     // Test setBooked() method
-    train.setBooked(true);
-    assert(train.getBooked() == true);
+    train->setBooked(true);
+    assert(train->getBooked() == true);
 
     // Test addSchedule() and getSchedule() methods
-    Schedule schedule1("Budapest", "Vienna", Time(9, 0), Time(10, 0));
-    Schedule schedule2("Vienna", "Prague", Time(13, 0), Time(14, 0));
-    train.addSchedule(schedule1);
-    train.addSchedule(schedule2);
-    LinkedList<Schedule*> &schedules = train.getSchedule();
+    Schedule *schedule1 = new Schedule("Budapest", "Vienna", Time(9, 0), Time(10, 0));
+    Schedule *schedule2 = new Schedule("Vienna", "Prague", Time(13, 0), Time(14, 0));
+    train->addSchedule(*schedule1);
+    train->addSchedule(*schedule2);
+    LinkedList<Schedule*> &schedules = train->getSchedule();
     assert(schedules.getSize() == 2);
 
     // Test removeSchedule() method
-    train.removeSchedule(schedule1);
+    train->removeSchedule(*schedule1);
     assert(schedules.getSize() == 1);
 
     // Test addCoach() and getCoaches() methods
-    Coach coach1(1, 50);
-    coach1.getSeats()[0].bookSeat();
-    coach1.getSeats()[1].bookSeat();
-    coach1.getSeats()[2].bookSeat();
-    assert(coach1.getSeats()[0].booked() == true);
-    assert(coach1.getSeats()[1].booked() == true);
-    assert(coach1.getSeats()[2].booked() == true);
+    Coach *coach1 = new Coach(1, 50);
+    coach1->getSeats()[0].bookSeat();
+    coach1->getSeats()[1].bookSeat();
+    coach1->getSeats()[2].bookSeat();
+    assert(coach1->getSeats()[0].booked() == true);
+    assert(coach1->getSeats()[1].booked() == true);
+    assert(coach1->getSeats()[2].booked() == true);
 
+    Coach *coach2 = new Coach(2, 40);
+    coach2->getSeats()[2].bookSeat();
+    coach2->getSeats()[0].bookSeat();
+    coach2->getSeats()[1].bookSeat();
 
-    Coach coach2(2, 40);
-    coach2.getSeats()[2].bookSeat();
-    coach2.getSeats()[0].bookSeat();
-    coach2.getSeats()[1].bookSeat();
-
-
-    train.addCoach(coach1);
-    train.addCoach(coach2);
-    LinkedList<Coach*> &coaches = train.getCoaches();
+    train->addCoach(*coach1);
+    train->addCoach(*coach2);
+    LinkedList<Coach*> &coaches = train->getCoaches();
     assert(coaches.getSize() == 2);
+
     // Test removeCoach() method
-    train.removeCoach(coach1);
+    train->removeCoach(*coach1);
     assert(coaches.getSize() == 1);
 
     // Test serializeTrain() method
-    train.serializeTrain("testtrain.txt");
+    train->serialize("testserializetrain.txt");
 
-    // Test output operator (<<) for Train
-    std::cout << "Train details: " << train << std::endl;
-
+    // Print train details
+    std::cout << "Train details: " << *train << std::endl;
     std::cout << "All tests passed successfully!\n" << std::endl;
+
+    // Clean up memory
+    delete coach1;
+    delete schedule1;
 }
+
 /**
  * @brief funnction to test the ticket class
  */
 
 void testTicket() {
     // Create some objects required for the ticket
-    Schedule schedule("Budapest", "Vienna", Time(9, 0), Time(10, 0));
+    Schedule schedule("Budapest", "Vienna", Time(10, 0), Time(9, 0));
     Train train(123, "Night Express", "Sebesvonat", false);
     Coach coach(1, 50);
     Seat seat(1, false);
@@ -279,12 +292,12 @@ void testTicket() {
     assert(ticket.getSeat() == &newSeat);
 
     // Test serializeTicket() method
-    ticket.serializeTicket();
+    ticket.serializeTicket("testserializeticket.txt");
 
     // Test output operator (<<) for Ticket
     std::cout << "Ticket details: " << ticket << std::endl;
 
-    std::cout << "All tests passed successfully!" << std::endl<<std::endl;
+    std::cout << "Ticket: all tests passed" << std::endl<<std::endl;
 }
 
 void testTime() {
@@ -339,8 +352,8 @@ void testTime() {
 // Test function for adding a train
 void testAddTrain() {
     TicketSystem ticketSystem;
-    Train train(1, "Express", "TypeA");
-    ticketSystem.addTrain(train);
+    Train *train = new Train(1, "Express", "TypeA");
+    ticketSystem.addTrain(*train);
 
     if (ticketSystem.getTrains().getSize() == 1 && ticketSystem.getTrains()[0]->getData()->getId() == 1) {
         std::cout << "Test Passed: Add Train" << std::endl;
@@ -352,10 +365,10 @@ void testAddTrain() {
 // Test function for removing a train
 void testRemoveTrain() {
     TicketSystem ticketSystem;
-    Train train1(1, "Express", "TypeA");
-    Train train2(2, "Local", "TypeB");
-    ticketSystem.addTrain(train1);
-    ticketSystem.addTrain(train2);
+    Train *train1 = new Train(1, "Express", "TypeA");
+    Train *train2 = new Train(2, "Local", "TypeB");
+    ticketSystem.addTrain(*train1);
+    ticketSystem.addTrain(*train2);
 
     ticketSystem.removeTrain(1);
 
@@ -369,19 +382,19 @@ void testRemoveTrain() {
 // Test function for issuing a ticket
 void testIssueTicket() {
     TicketSystem ticketSystem;
-    Train train2(1, "Express", "TypeA");
+    Train *train2 = new Train(1, "Express", "TypeA");
 
     // Add three schedules
-    Schedule schedule1("CityA", "CityB", Time(12, 0), Time(10, 0));
-    Schedule schedule2("CityB", "CityC", Time(13, 30), Time(12, 1));
-    Schedule schedule3("CityC", "CityD", Time(14, 30), Time(13, 30));
-    train2.addSchedule(schedule1);
-    train2.addSchedule(schedule2);
-    train2.addSchedule(schedule3);
+    Schedule *schedule1 = new Schedule("CityA", "CityB", Time(12, 0), Time(10, 0));
+    Schedule *schedule2 = new Schedule("CityB", "CityC", Time(13, 30), Time(12, 1));
+    Schedule *schedule3 = new Schedule("CityC", "CityD", Time(14, 30), Time(13, 30));
+    train2->addSchedule(*schedule1);
+    train2->addSchedule(*schedule2);
+    train2->addSchedule(*schedule3);
 
-    Coach coach1(1, 10);
-    train2.addCoach(coach1);
-    ticketSystem.addTrain(train2);
+    Coach *coach1 = new Coach(1, 10);
+    train2->addCoach(*coach1);
+    ticketSystem.addTrain(*train2);
 
     // Define sample schedule and time
     Time time1(9, 0);
@@ -400,53 +413,53 @@ void testIssueTicket() {
     assert(issuedTicket->getSchedule()->getDestination() == "CityD");
     std::cout << "Test Passed: Issue Ticket" << std::endl;
 
-    // Clean up issued ticket to avoid memory leak
-    delete issuedTicket;
-
 }
 
 // Test function for deserializing train data
 void testDeserializeTrain() {
     TicketSystem ticketSystem;
-    std::ofstream outfile("train.txt");
-    outfile << "1\nExpress\nTypeA\n0\nCityA\nCityB\n10:00\n12:00\n1\n 10\n\n";
-    outfile.close();
+    ticketSystem.desirializeTrain(ticketSystem, "testtrain.txt");
 
-    ticketSystem.desirializeTrain();
+    assert(ticketSystem.getTrains().getSize() == 1);
+    assert(ticketSystem.getTrains()[0]->getData()->getId() == 456);
+    assert(ticketSystem.getTrains()[0]->getData()->getName() == "Morning Express");
+    assert(ticketSystem.getTrains()[0]->getData()->getType() == "InterCity");
+    assert(ticketSystem.getTrains()[0]->getData()->getSchedule()[0]->getData()->getDeparture() == "Vienna");
+    assert(ticketSystem.getTrains()[0]->getData()->getSchedule()[0]->getData()->getDestination() == "Prague");
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getCoachNumber() == 2);
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getNumSeats() == 40);
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getSeats()[0].getSeatNumber() == 1);
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getSeats()[0].booked() == true);
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getSeats()[2].getSeatNumber() == 3);
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getSeats()[2].booked() == true);
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getSeats()[39].getSeatNumber() == 40);
+    assert(ticketSystem.getTrains()[0]->getData()->getCoaches()[0]->getData()->getSeats()[39].booked() == false);
 
-    if (ticketSystem.getTrains().getSize() == 1 && ticketSystem.getTrains()[0]->getData()->getId() == 1) {
-        std::cout << "Test Passed: Deserialize Train" << std::endl;
-    } else {
-        std::cout << "Test Failed: Deserialize Train" << std::endl;
-    }
+    std::cout<<"Train deserialization: all test passed\n";
 }
 
 // Test function for deserializing ticket data
 void testDeserializeTicket() {
     TicketSystem ticketSystem;
-    Train train2(1, "Express", "TypeA");
-    Schedule schedule1("CityA", "CityB", Time(10, 0), Time(12, 0));
-    train2.addSchedule(schedule1);
-    Coach coach1(1, 10);
-    train2.addCoach(coach1);
-    Schedule schedule2("Vienna", "Prague", Time(13, 0), Time(14, 0));
-    train2.addSchedule(schedule2);
-    ticketSystem.addTrain(train2);
 
-    std::ofstream outfile("ticket.txt");
-    outfile << "1\nCityA\nCityB\n10:00\n12:00\n123\nExpress\nTypeA\n1\n0\n0.1";
-    outfile.close();
+    ticketSystem.desirializeTrain(ticketSystem, "testtrain.txt");
+    ticketSystem.deserializeTicket(ticketSystem, "testticket.txt");
 
-    ticketSystem.deserializeTicket();
+    assert(ticketSystem.getTickets().getSize() == 1);
+    assert(ticketSystem.getTickets()[0]->getData()->getId() == 1);
+    assert(ticketSystem.getTickets()[0]->getData()->getDiscount() == 0.7);
+    assert(ticketSystem.getTickets()[0]->getData()->getSchedule()->getDeparture() == "Budapest");
+    assert(ticketSystem.getTickets()[0]->getData()->getSchedule()->getDestination() == "Vienna");
+    assert(ticketSystem.getTickets()[0]->getData()->getTrain()->getId() == 456);
+    assert(ticketSystem.getTickets()[0]->getData()->getTrain()->getName() == "Morning Express");
+    assert(ticketSystem.getTickets()[0]->getData()->getTrain()->getType() == "InterCity");
+    assert(ticketSystem.getTickets()[0]->getData()->getSeat()->getSeatNumber() == 2);
 
-    if (ticketSystem.getTickets().getSize() == 1 && ticketSystem.getTickets()[0]->getData()->getId() == 1) {
-        std::cout << "Test Passed: Deserialize Ticket" << std::endl;
-    } else {
-        std::cout << "Test Failed: Deserialize Ticket" << std::endl;
-    }
+    std::cout<<"Ticket desirialization: all tests passed\n";
+
 }
 
-
+//Needs the serilaize and deserialize of the ticket and the menu
 
 int main() {
 
@@ -460,34 +473,24 @@ int main() {
     testAddTrain();
     testRemoveTrain();
     testIssueTicket();
-   // testDeserializeTrain();
-    //testDeserializeTicket();
+    testDeserializeTrain();
+    testDeserializeTicket();
 
-    //Szivárog addTrain talán működik de nem tudja kikeresni
-    /*
     TicketSystem ticketSystem;
 
-    // Create submenu objects
-    TicketsMenu ticketsMenu(ticketSystem);
-    TrainsMenu trainsMenu(ticketSystem);
-    ScheduleMenu scheduleMenu(ticketSystem);
-    ExitMenu exitMenu(ticketSystem);
+    std::cout << "\n";
 
+   /* // Main loop to display and handle the menu
+    bool exitFlag = false;
 
-    // Create the main menu object and add submenus
-    MainMenu mainMenu(ticketSystem);
-    mainMenu.addSubMenu(&ticketsMenu, 0);
-    mainMenu.addSubMenu(&trainsMenu, 1);
-    mainMenu.addSubMenu(&scheduleMenu, 2);
-    mainMenu.addSubMenu(&exitMenu, 3);
-    std::cout<<"\n";
-    // Main loop to display and handle the menu
-   while (true) {
-        // Display the main menu
-        mainMenu.displayMenu();
-        // Handle user input and execute actions
-        mainMenu.handleUserInput();
-    }*/
+    ticketSystem.desirializeTrain(ticketSystem, "");
+    while (!exitFlag) {
+        displayMenu();
+        handleUserInput(ticketSystem, exitFlag);
+    }
 
+    std::cout << "Exiting program..." << std::endl;
+
+*/
     return 0;
 }
