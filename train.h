@@ -129,6 +129,10 @@ public:
      */
     void serialize(const std::string &filename);
 
+
+    /**
+     * @brief Destructor for deleting coaches and schedules
+     */
     ~Train(){
         Node<Coach*> *coachNode = coaches.begin();
         while (coachNode != nullptr) {

@@ -47,7 +47,6 @@ std::ostream& operator<<(std::ostream &os, const Schedule &schedule) {
        << "\nDeparture time: " << schedule.getDepartureTime()
        << "\nDestination station: " << schedule.getDestination();
 
-    // Calculate the arrival time including the latency
     Time arrivalTime = schedule.getArrivalTime();
     int latency = schedule.getLatency();
     int totalMinutes = arrivalTime.getMinutes() + latency;
@@ -57,7 +56,6 @@ std::ostream& operator<<(std::ostream &os, const Schedule &schedule) {
     int totalHours = arrivalTime.getHours() + additionalHours;
     int finalHours = totalHours % 24;
 
-    // Set the updated time
     arrivalTime.setHours(finalHours);
     arrivalTime.setMinutes(finalMinutes);
 
@@ -67,10 +65,10 @@ std::ostream& operator<<(std::ostream &os, const Schedule &schedule) {
 
 
 void Schedule::serialize(std::ofstream &outfile) const {
-    outfile << departure << std::endl // Departure station
-            << destination << std::endl // Destination station
-            << departureTime << std::endl // Departure time
-            << arrivalTime << std::endl << std::endl; // Arrival time
+    outfile << departure << std::endl
+            << destination << std::endl
+            << departureTime
+            << arrivalTime<<std::endl;
 }
 
 void Schedule::deserialize(std::ifstream &infile) {
@@ -81,7 +79,6 @@ void Schedule::deserialize(std::ifstream &infile) {
     Time arrivalTime;
     int hours = 0, minutes = 0;
 
-    // Read data from file
     std::getline(infile, departure);
     std::getline(infile, destination);
 
@@ -89,18 +86,17 @@ void Schedule::deserialize(std::ifstream &infile) {
     std::stringstream ss(line);
 
     ss >> hours;
-    ss.ignore(1); // Skip colon (':')
+    ss.ignore(1);
     ss >> minutes;
     departureTime = Time(hours, minutes);
 
     std::getline(infile, line);
     std::stringstream ss2(line);
     ss2 >> hours;
-    ss2.ignore(1); // Skip colon (':')
+    ss2.ignore(1);
     ss2 >> minutes;
     arrivalTime = Time(hours, minutes);
 
-    // Set the read data to the Schedule object
     setDeparture(departure);
     setDestination(destination);
     setDepartureTime(departureTime);

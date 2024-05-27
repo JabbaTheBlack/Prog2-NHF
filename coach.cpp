@@ -28,15 +28,15 @@ size_t Coach::getNumSeats() const {
 
 
 void Coach::serialize(const std::string &filename) const {
-    std::ofstream outfile(filename, std::ios::app); // Open file for writing
+    std::ofstream outfile(filename, std::ios::app);
 
     if (outfile.is_open()) {
-        outfile << coachNumber << std::endl; // Coach number
-        outfile << numSeats << std::endl;    // Number of seats
+        outfile << coachNumber << std::endl;
+        outfile << numSeats << std::endl;
         outfile << "Seats:" << std::endl;
         for (size_t i = 0; i < numSeats; ++i) {
-            outfile << seats[i].getSeatNumber() << " "; // Seat number
-            outfile << (seats[i].booked() ? 1 : 0) << std::endl; // Booked status
+            outfile << seats[i].getSeatNumber() << " ";
+            outfile << (seats[i].booked() ? 1 : 0) << std::endl;
         }
     } else {
         std::cerr << "Failed to open file: " << filename << std::endl;

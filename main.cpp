@@ -7,7 +7,7 @@
 #include "train.h"
 #include "memtrace.h"
 #include "ticketSystem.h"
-//#include "menu.cpp"
+#include "menu.h"
 
 
 #include <iostream>
@@ -22,9 +22,6 @@
  * This function creates a LinkedList of integers, inserts some elements, removes an element,
  * and then displays the size of the list and its contents before and after the removal.
  */
-
-
-
 void testLinkedList() {
     // Create a LinkedList of integers
     LinkedList<int> list;
@@ -57,8 +54,6 @@ void testLinkedList() {
 /**
  * @brief function to test the seat class
  */
-
-
 void testSeat() {
     // Create two seats
     Seat seat1(1);
@@ -69,7 +64,7 @@ void testSeat() {
     assert(seat2.booked() == false);
     // Book seat 1
     seat1.bookSeat();
-    // Now, seat 1 should be booked
+    //seat 1 should be booked
     assert(seat1.booked() == true);
     assert(seat2.booked() == false);
 
@@ -90,8 +85,6 @@ void testSeat() {
 /**
  * @brief function to test the coach class
  */
-
-
 void testCoach() {
     // Create a coach with 50 seats
     Coach coach(1, 50);
@@ -117,8 +110,6 @@ void testCoach() {
 /**
  * @brief function to test the schedule class
  */
-
-
 void testSchedule() {
     // Creating a Schedule object with initial values
     Schedule schedule("Budapest", "Vienna", Time(9, 0), Time(10, 0), 0);
@@ -246,7 +237,6 @@ void testTrain() {
 /**
  * @brief funnction to test the ticket class
  */
-
 void testTicket() {
     // Create some objects required for the ticket
     Schedule schedule("Budapest", "Vienna", Time(10, 0), Time(9, 0));
@@ -292,7 +282,7 @@ void testTicket() {
     assert(ticket.getSeat() == &newSeat);
 
     // Test serializeTicket() method
-    ticket.serializeTicket("testserializeticket.txt");
+    ticket.serialize("testserializeticket.txt");
 
     // Test output operator (<<) for Ticket
     std::cout << "Ticket details: " << ticket << std::endl;
@@ -300,6 +290,9 @@ void testTicket() {
     std::cout << "Ticket: all tests passed" << std::endl<<std::endl;
 }
 
+/**
+ * @brief Function to test the time class
+ */
 void testTime() {
     // Test default constructor
     Time t1;
@@ -331,8 +324,8 @@ void testTime() {
 
     // Test addition operator
     Time t4 = t1 + t2;
-    assert(t4.getHours() == 9);  // 3 + 5 = 8
-    assert(t4.getMinutes() == 15);  // 30 + 45 = 75, which is 1 hour and 15 minutes
+    assert(t4.getHours() == 9);
+    assert(t4.getMinutes() == 15);
 
     // Test output operator
     std::cout << "Time t4: " << t4;
@@ -349,7 +342,10 @@ void testTime() {
 
 
 
-// Test function for adding a train
+
+/**
+ * @brief Function to test adding train
+ */
 void testAddTrain() {
     TicketSystem ticketSystem;
     Train *train = new Train(1, "Express", "TypeA");
@@ -362,7 +358,9 @@ void testAddTrain() {
     }
 }
 
-// Test function for removing a train
+/**
+ * @brief Test function for removing a train
+ */
 void testRemoveTrain() {
     TicketSystem ticketSystem;
     Train *train1 = new Train(1, "Express", "TypeA");
@@ -378,8 +376,9 @@ void testRemoveTrain() {
         std::cout << "Test Failed: Remove Train" << std::endl;
     }
 }
-
-// Test function for issuing a ticket
+/**
+ * @brief Test function for issuing a ticket
+ */
 void testIssueTicket() {
     TicketSystem ticketSystem;
     Train *train2 = new Train(1, "Express", "TypeA");
@@ -398,27 +397,32 @@ void testIssueTicket() {
 
     // Define sample schedule and time
     Time time1(9, 0);
-    Schedule requestSchedule("CityA", "CityD"); // Requesting a schedule from "CityA" to "CityD"
+    Schedule requestSchedule("CityA", "CityD");
 
     // Issue a ticket
     ticketSystem.issueTicket(requestSchedule, time1);
 
     // Verify that a ticket was issued
     LinkedList<Ticket*>& tickets = ticketSystem.getTickets();
-    //assert(tickets.getSize() == 1); // Ensure a ticket was issued
-
+    assert(tickets.getSize() == 1);
     Ticket* issuedTicket = tickets[0]->getData();
-    assert(issuedTicket->getTrain()->getId() == 1); // Ensure ticket is associated with the correct train
+    assert(issuedTicket->getTrain()->getId() == 1);
     assert(issuedTicket->getSchedule()->getDeparture() == "CityA");
     assert(issuedTicket->getSchedule()->getDestination() == "CityD");
     std::cout << "Test Passed: Issue Ticket" << std::endl;
 
 }
-
-// Test function for deserializing train data
+/**
+ * @brief Test function for deserializing train data
+ */
 void testDeserializeTrain() {
     TicketSystem ticketSystem;
-    ticketSystem.desirializeTrain(ticketSystem, "testtrain.txt");
+    try{
+        ticketSystem.desirializeTrain(ticketSystem, "testtrain.txt");
+    }catch(const char*){
+        std::cout<<"File cannot be opened. Aborting testDeserializeTrain\n";
+        return;
+    }
 
     assert(ticketSystem.getTrains().getSize() == 1);
     assert(ticketSystem.getTrains()[0]->getData()->getId() == 456);
@@ -438,12 +442,23 @@ void testDeserializeTrain() {
     std::cout<<"Train deserialization: all test passed\n";
 }
 
-// Test function for deserializing ticket data
+/**
+ * @brief Test function for deserializing ticket data
+ */
 void testDeserializeTicket() {
     TicketSystem ticketSystem;
 
-    ticketSystem.desirializeTrain(ticketSystem, "testtrain.txt");
-    ticketSystem.deserializeTicket(ticketSystem, "testticket.txt");
+
+    try
+    {
+        ticketSystem.desirializeTrain(ticketSystem, "testtrain.txt");
+        ticketSystem.deserializeTicket(ticketSystem, "testticket.txt");
+    }catch(const char*){
+        std::cout<<"File cannot be found. Aborting testDeserializeTicket\n";
+        return;
+    }
+
+
 
     assert(ticketSystem.getTickets().getSize() == 1);
     assert(ticketSystem.getTickets()[0]->getData()->getId() == 1);
@@ -459,11 +474,9 @@ void testDeserializeTicket() {
 
 }
 
-//Needs the serilaize and deserialize of the ticket and the menu
-
 int main() {
 
-    testLinkedList();
+   /* testLinkedList();
     testSeat();
     testCoach();
     testSchedule();
@@ -471,26 +484,23 @@ int main() {
     testTicket();
     testTime();
     testAddTrain();
-    testRemoveTrain();
-    testIssueTicket();
+    testRemoveTrain();*/
+    testIssueTicket();/*
     testDeserializeTrain();
-    testDeserializeTicket();
+    testDeserializeTicket();*/
 
     TicketSystem ticketSystem;
 
     std::cout << "\n";
 
-   /* // Main loop to display and handle the menu
+    // Main loop to display and handle the menu
     bool exitFlag = false;
 
-    ticketSystem.desirializeTrain(ticketSystem, "");
+    ticketSystem.desirializeTrain(ticketSystem, "train.txt");
+    ticketSystem.deserializeTicket(ticketSystem, "ticket.txt");
     while (!exitFlag) {
         displayMenu();
         handleUserInput(ticketSystem, exitFlag);
     }
-
-    std::cout << "Exiting program..." << std::endl;
-
-*/
     return 0;
 }

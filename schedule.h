@@ -48,21 +48,82 @@ public:
         this->destination = destination;
     }
 
-    string getDestination() const; /**< Get the destination. */
-    string getDeparture() const; /**< Get the departure location. */
-    Time getArrivalTime() const; /**< Get the arrival time. */
-    Time getDepartureTime() const; /**< Get the departure time. */
-    int getLatency() const; /**< Get the latency. */
 
-    void setDestination(string destination); /**< Set the destination. */
-    void setDeparture(string departure); /**< Set the departure location. */
-    void setArrivalTime(const Time &arrivalTime); /**< Set the arrival time. */
-    void setDepartureTime(const Time &departureTime); /**< Set the departure time. */
-    void setLatency(int latency); /**< Set the latency. */
+    Schedule(const Schedule& other) : departure(other.departure), destination(other.destination) {}
+    /**
+      * @brief Get the destination.
+      * @return The destination string.
+      */
+    string getDestination() const;
 
+    /**
+     * @brief Get the departure location.
+     * @return The departure location string.
+     */
+    string getDeparture() const;
 
-    void serialize(std::ofstream &outfile) const;
-    void deserialize(std::ifstream &infile);
+    /**
+     * @brief Get the arrival time.
+     * @return The arrival time object.
+     */
+    Time getArrivalTime() const;
+
+    /**
+     * @brief Get the departure time.
+     * @return The departure time object.
+     */
+    Time getDepartureTime() const;
+
+    /**
+     * @brief Get the latency.
+     * @return The latency value (in minutes).
+     */
+    int getLatency() const;
+
+    // Setters
+    /**
+     * @brief Set the destination.
+     * @param destination The new destination string.
+     */
+    void setDestination(string destination);
+
+    /**
+     * @brief Set the departure location.
+     * @param departure The new departure location string.
+     */
+    void setDeparture(string departure);
+
+    /**
+     * @brief Set the arrival time.
+     * @param arrivalTime The new arrival time object.
+     */
+    void setArrivalTime(const Time& arrivalTime);
+
+    /**
+     * @brief Set the departure time.
+     * @param departureTime The new departure time object.
+     */
+    void setDepartureTime(const Time& departureTime);
+
+    /**
+     * @brief Set the latency.
+     * @param latency The new latency value (in minutes).
+     */
+    void setLatency(int latency);
+
+    /**
+     * @brief Serialize the schedule data to an output stream (e.g., file).
+     *
+     * @param outfile The output stream to write the data to.
+     */
+    void serialize(std::ofstream& outfile) const;
+
+    /**
+     * @brief Deserialize the schedule data from an input stream (e.g., file).
+     *
+     * @param infile The input stream to read the data from.
+     */
+    void deserialize(std::ifstream& infile);
 
 };
 

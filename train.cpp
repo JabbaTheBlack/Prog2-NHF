@@ -70,88 +70,36 @@ std::ostream& operator<<(std::ostream &os, Train &train){
 
 
 void Train::serialize(const std::string &filename){
-    std::ofstream outfile(filename, std::ios::app); // Open file for appending
+    std::ofstream outfile(filename, std::ios::app);
 
     if(outfile.is_open()){
         outfile << "Train:\n"
-                << id << std::endl // Train ID
-                << name << std::endl // Train Name
-                << type << std::endl // Train Type
-                << (isBooked ? 0 : 1) << std::endl << std::endl; // Is Booked
+                << id << std::endl
+                << name << std::endl
+                << type << std::endl
+                << (isBooked ? 0 : 1) << std::endl << std::endl;
 
-        // Write schedules information if available
         if (schedules[0] != nullptr) {
             outfile << "Schedules:\n";
+            int scheduleCount = 0; // Counter to track the number of schedules written
             for (Node<Schedule*>* scheduleNode = schedules.begin(); scheduleNode != nullptr; scheduleNode = scheduleNode->getNext()) {
                 Schedule* schedule = scheduleNode->getData();
-                schedule->serialize(outfile); // Serialize schedule
+                schedule->serialize(outfile);
+                scheduleCount++;
             }
         }
 
-        // Write coaches information if available
         if (coaches[0] != nullptr) {
             outfile << "Coaches:\n";
             for (Node<Coach*>* coachNode = coaches.begin(); coachNode != nullptr; coachNode = coachNode->getNext()) {
                 Coach* coach = coachNode->getData();
-                outfile << coach->getCoachNumber() << std::endl // Coach Number
-                        << coach->getNumSeats() << std::endl << std::endl; // Number of seats
-
-                coach->serialize(filename); // Serialize coach
+                coach->serialize(filename);
             }
         }
 
-        outfile << std::endl << std::endl;
         outfile.close();
     } else {
         throw "Error opening file\n";
     }
 }
 
-
-/*
-
-void Train::serializeTrain(const std::string &filename){
-    std::ofstream outfile(filename, std::ios::app); // Open file for appending
-
-    if(outfile.is_open()){
-        outfile<<"Train:\n";
-        outfile << id << std::endl // Train ID
-        << name << std::endl // Train Name
-        << type << std::endl // Train Type
-        << (isBooked ? 0 : 1) << std::endl<<std::endl; // Is Booked
-
-        // Write schedules information if available
-        if (schedules[0] != nullptr) {
-            outfile<<"Schedules:\n";
-            for (Node<Schedule*>* scheduleNode = schedules.begin(); scheduleNode != nullptr; scheduleNode = scheduleNode->getNext()) {
-                Schedule* schedule = scheduleNode->getData();
-                outfile << schedule->getDeparture() << std::endl //Departure
-                <<schedule->getDestination() << std::endl //Destination
-                << schedule->getDepartureTime()<<std::endl //Departure Time
-                << schedule->getArrivalTime()<<std::endl<<std::endl; //Arrival Time
-            }
-        }
-
-        // Write coaches information if available
-        if (coaches[0] != nullptr) {
-            outfile<<"Coaches:\n";
-            for (Node<Coach*>* coachNode = coaches.begin(); coachNode != nullptr; coachNode = coachNode->getNext()) {
-                outfile<< coachNode->getData()->getCoachNumber() << std::endl //Coach Number
-                << coachNode->getData()->getNumSeats() << std::endl<<std::endl; //Number of seats
-
-                // Print booked seats
-                outfile<<"Seats:\n";
-                for (size_t i = 0; i < coachNode->getData()->getNumSeats(); i++) {
-                    if (coachNode->getData()->getSeats()[i].booked()) {
-                        outfile << coachNode->getData()->getSeats()[i].getSeatNumber() << std::endl;
-                    }
-                }
-            }
-        }
-        outfile<<std::endl<<std::endl;
-        outfile.close();
-    } else {
-        throw"Error opening file\n";
-    }
-}
-*/

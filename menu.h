@@ -1,196 +1,71 @@
+#ifndef NH_MENU_H
+#define NH_MENU_H
+
 #ifndef MENU_H
 #define MENU_H
 
 #include "ticketSystem.h"
-#include <iostream>
-#include <string>
-
 
 /**
- * @brief Abstract base class representing a menu.
+ * @brief Displays the main menu options to the user.
  */
-class Menu {
-protected:
-    std::string title; ///< Title of the menu
-    TicketSystem ticketSystem; ///< Reference to the TicketSystem object
-
-public:
-    /**
-     * @brief Constructs a new Menu object.
-     * @param title The title of the menu.
-     * @param ts Reference to the TicketSystem object.
-     */
-    Menu(const std::string& title, TicketSystem &ts) : title(title) , ticketSystem(ts){}
-
-    /**
-     * @brief Displays the menu options.
-     */
-    virtual void displayMenu() = 0;
-
-    /**
-     * @brief Handles user input for the menu.
-     */
-    virtual void handleUserInput() = 0;
-
-    /**
-    * @brief Executes the selected action.
-    */
-    virtual void executeAction() = 0;
-
-    /**
-     * @brief Gets the title of the menu.
-     * @return The title of the menu.
-     */
-    std::string getTitle() const {
-        return title;
-    }
-};
+void displayMenu();
 
 /**
- * @brief Class representing the Tickets menu.
+ * @brief Displays the train-related menu options to the user.
  */
-class TicketsMenu : public Menu {
-public:
-    /**
-     * @brief Constructs a new TicketsMenu object.
-     * @param ts Reference to the TicketSystem object.
-     */
-    TicketsMenu(TicketSystem &ts) : Menu("Tickets", ts) {}
-
-    /**
-     * @brief Displays the Tickets menu.
-     */
-    void displayMenu() override;
-
-    /**
-     * @brief Handles user input for the Tickets menu.
-     */
-    void handleUserInput() override;
-
-    /**
-    * @brief Executes the selected action in the Tickets menu.
-    */
-    void executeAction() override;
-};
+void displayTrainsMenu();
 
 /**
- * @brief Class representing the Trains menu.
+ * @brief Displays the train-related menu options to the user.
  */
-class TrainsMenu : public Menu {
-public:
-    /**
-     * @brief Constructs a new TrainsMenu object.
-     * @param ts Reference to the TicketSystem object.
-     */
-    TrainsMenu(TicketSystem &ts) : Menu("Trains", ts) {}
-
-    /**
-    * @brief Displays the Trains menu.
-    */
-    void displayMenu() override;
-
-
-    /**
-     * @brief Handles user input for the Trains menu.
-     */
-    void handleUserInput() override;
-
-    /**
-    * @brief Executes the selected action in the Trains menu.
-    */
-    void executeAction() override;
-};
+void displayTrainsSubMenu();
 
 /**
- * @brief Class representing the Schedule menu.
+ * @brief Handles user input for the main menu and interacts with the TicketSystem object.
+ *
+ * @param ticketSystem A reference to the TicketSystem object for data access and manipulation.
+ * @param exitFlag A reference to a boolean flag indicating whether the user wants to exit the program.
+ *        The function should update this flag based on user input.
  */
-class ScheduleMenu : public Menu {
-public:
-    /**
-    * @brief Constructs a new ScheduleMenu object.
-    * @param ts Reference to the TicketSystem object.
-    */
-    ScheduleMenu(TicketSystem &ts) : Menu("Schedule", ts) {}
-
-    /**
-     * @brief Displays the Schedule menu.
-     */
-    void displayMenu() override;
-
-    /**
-    * @brief Handles user input for the Schedule menu.
-    */
-    void handleUserInput() override;
-
-    /**
-  * @brief Executes the selected action in the Schedule menu.
-  */
-    void executeAction() override;
-};
+void handleUserInput(TicketSystem &ticketSystem, bool &exitFlag);
 
 /**
- * @brief Class representing the Exit menu.
+ * @brief Prompts the user for a menu choice and validates their input.
+ *
+ * @return An integer representing the user's chosen menu option.
  */
-class ExitMenu : public Menu {
-public:
-    /**
-     * @brief Constructs a new ExitMenu object.
-     * @param ts Reference to the TicketSystem object.
-     */
-    ExitMenu(TicketSystem &ts) : Menu("Exit", ts) {}
-
-    /**
-     * @brief Displays the Exit menu.
-     */
-    void displayMenu() override;
-
-    /**
-    * @brief Handles user input for the Exit menu.
-    */
-    void handleUserInput() override;
-
-    /**
-    * @brief Executes the selected action in the Exit menu.
-    */
-    void executeAction() override;
-};
+int getChoice();
 
 /**
- * @brief Class representing the Main menu.
+ * @brief Guides the user through adding a new train to the TicketSystem object.
+ *
+ * @param ticketSystem A reference to the TicketSystem object to add the new train to.
  */
-class MainMenu : public Menu {
-private:
-    Menu* subMenus[4]; /// Array of pointers to submenus
+void addTrain(TicketSystem &ticketSystem);
 
-public:
-    /**
-    * @brief Constructs a new MainMenu object.
-    * @param ts Reference to the TicketSystem object.
-    */
-    MainMenu(TicketSystem &ts) : Menu("Main Menu", ts) {}
+/**
+ * @brief Guides the user through searching for a train in the TicketSystem object.
+ *
+ * @param ticketSystem A reference to the TicketSystem object to search for trains in.
+ */
+void searchTrain(TicketSystem &ticketSystem);
+
+/**
+ * @brief Guides the user through removing a train from the TicketSystem object.
+ *
+ * @param ticketSystem A reference to the TicketSystem object to remove the train from.
+ */
+void removeTrain(TicketSystem &ticketSystem);
+
+/**
+ * @brief Displays the ticket-related menu options to the user.
+ */
+void displayTicketsMenu();
 
 
-    /**
-    * @brief Adds a submenu to the Main menu.
-    * @param subMenu Pointer to the submenu.
-    * @param index Index to add the submenu.
-    */
-    void addSubMenu(Menu* subMenu, int index);
-
-    /**
-     * @brief Displays the Main menu.
-     */
-    void displayMenu() override;
-
-    /**
-     * @brief Handles user input for the Main menu.
-     */
-    void handleUserInput() override;
-
-    /**
-     * @brief Executes the selected action in the Main menu.
-     */
-    void executeAction() override;
-};
 
 #endif // MENU_H
+
+
+#endif //NH_MENU_H

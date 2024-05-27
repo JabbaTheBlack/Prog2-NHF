@@ -67,38 +67,33 @@ std::ostream& operator<<(std::ostream &os, const Ticket &ticket){
     return os;
 }
 
-void Ticket::serializeTicket(const std::string &filename) {
-    std::ofstream outfile(filename , std::ios::app); // Open file for writing
+void Ticket::serialize(const std::string &filename) {
+    std::ofstream outfile(filename , std::ios::app);
 
     if (outfile.is_open() && !outfile.eof()) {
-        outfile << id << std::endl; // Ticket ID
+        outfile << id << std::endl;
 
-        // Write schedule information if available
         if (schedule != nullptr) {
-            outfile << schedule->getDeparture() << std::endl // Departure
-                    << schedule->getDestination() << std::endl // Destination
-                    << schedule->getDepartureTime().getHours() << ":" << schedule->getDepartureTime().getMinutes() << std::endl // Departure Time
-                    << schedule->getArrivalTime().getHours() << ":" << schedule->getArrivalTime().getMinutes() << std::endl; // Arrival Time
+            outfile << schedule->getDeparture() << std::endl
+                    << schedule->getDestination() << std::endl
+                    << schedule->getDepartureTime().getHours() << ":" << schedule->getDepartureTime().getMinutes() << std::endl
+                    << schedule->getArrivalTime().getHours() << ":" << schedule->getArrivalTime().getMinutes() << std::endl;
         }
 
-        // Write train information if available
         if (train != nullptr) {
-            outfile << train->getId() << std::endl // Train ID
-                    << train->getName() << std::endl // Train Name
-                    << train->getType() << std::endl; // Train Type
+            outfile << train->getId() << std::endl
+                    << train->getName() << std::endl
+                    << train->getType() << std::endl;
         }
 
-        // Write coach information if available
         if (coach != nullptr) {
-            outfile << coach->getCoachNumber() << std::endl; // Coach Number
+            outfile << coach->getCoachNumber() << std::endl;
         }
 
-        // Write seat information if available
         if (seat != nullptr) {
-            outfile << seat->getSeatNumber() << std::endl; // Seat Number
+            outfile << seat->getSeatNumber() << std::endl;
         }
 
-        // Write discount
         outfile << discount << std::endl << std::endl;
     } else {
         std::cout << "File cannot be opened" << std::endl;

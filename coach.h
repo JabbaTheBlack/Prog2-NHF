@@ -30,7 +30,21 @@ public:
         }
     }
 
+    // Copy constructor
+    /**
+     * @brief Creates a deep copy of another Coach object.
+     *
+     * @param coach The Coach object to copy.
+     */
     Coach(const Coach &coach);
+
+    // Copy assignment operator
+    /**
+     * @brief Assigns values from another Coach object (deep copy).
+     *
+     * @param coach The Coach object to copy from.
+     * @return A reference to the modified Coach object.
+     */
     Coach& operator=(const Coach&);
     Coach(Coach&& other) noexcept
             : coachNumber(other.coachNumber), seats(other.seats),
@@ -40,13 +54,17 @@ public:
         other.isBooked = false;
     }
 
+    // Move assignment operator
+    /**
+     * @brief 
+     */
     Coach& operator=(Coach&& other) noexcept;
 
-        /**
-         * @brief Get a pointer to the array of seats in the coach.
-         *
-         * @return Seat* Pointer to the array of seats.
-         */
+    /**
+      * @brief Get a pointer to the array of seats in the coach.
+      *
+      * @return Seat* Pointer to the array of seats.
+     */
     Seat *getSeats();
 
     /**

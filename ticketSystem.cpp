@@ -26,6 +26,7 @@ void TicketSystem::removeTicket(int ticketId){
         if(ticket->getId() == ticketId){
             tickets.remove(ticket);
         }
+        delete ticket;
     }
 }
 
@@ -39,7 +40,7 @@ void TicketSystem::removeTicket(int ticketId){
  * @param schedule Reference to the schedule containing departure and destination information.
  * @param time Reference to the time of ticket purchase.
  */
-void TicketSystem::issueTicket(Schedule &schedule, const Time &time){
+void TicketSystem::issueTicket(Schedule &schedule, const Time &time, const double discount){
     Train *bestTrain = nullptr;
     Time bestDepartureTime;
     Time bestDestinationTime;
@@ -56,13 +57,12 @@ void TicketSystem::issueTicket(Schedule &schedule, const Time &time){
             Schedule *currentSchedule = currentScheduleNode->getData();
 
             if(currentSchedule->getDeparture() == schedule.getDeparture() && (currentSchedule->getDepartureTime() >= time)){
-                Node<Schedule*> *destinationScheduleNode = currentScheduleNode->getNext();
+                Node<Schedule*> *destinationScheduleNode = currentScheduleNode;
                 Time departureTime = currentSchedule->getDepartureTime();
 
                 while (destinationScheduleNode != nullptr) {
                     Schedule *destinationSchedule = destinationScheduleNode->getData();
 
-                    // Check if the destination matches
                     if (destinationSchedule->getDestination() == schedule.getDestination()) {
                         Time destinationTime = destinationSchedule->getArrivalTime();
 
@@ -83,11 +83,9 @@ void TicketSystem::issueTicket(Schedule &schedule, const Time &time){
         }
         currentTrainNode = currentTrainNode->getNext();
     }
-    delete currentTrainNode;
 
 
     if (bestTrain != nullptr) {
-        // Look for a seat with the same ticket type in any coach
         bool foundSeat = false;
         for (auto &coach : bestTrain->getCoaches()) {
             for (size_t seatIndex = 0; seatIndex < static_cast<size_t>(coach.getData()->size()); seatIndex++) {
@@ -99,10 +97,11 @@ void TicketSystem::issueTicket(Schedule &schedule, const Time &time){
                     coach.getData()->getSeats()[availableSeat->getSeatNumber() - 1].bookSeat();
                     bestSchedule->setDepartureTime(bestDepartureTime);
                     bestSchedule->setArrivalTime(bestDestinationTime);
-                    // Create a ticket
-                    Ticket *newTicket = new Ticket(static_cast<int>(tickets.getSize() + 1), bestSchedule, bestTrain, coach.getData(), availableSeat);
+                    bestSchedule->setLatency(0);
 
-                    // Add ticket to the system's ticket list
+                    //Schedule *schedule = new Schedule(bestSchedule.getDeparture(), bestSchedule.getDestination(), bestSchedule.getArrivalTime(), bestSchedule.getDepartureTime());
+                    Ticket *newTicket = new Ticket(static_cast<int>(tickets.getSize() + 1), bestSchedule, bestTrain, coach.getData(), availableSeat, discount);
+
                     tickets.insert(newTicket);
 
                     std::cout << "Ticket issued successfully for train " << bestTrain->getId() <<
@@ -127,6 +126,7 @@ void TicketSystem::issueTicket(Schedule &schedule, const Time &time){
     }
 }
 
+
 LinkedList<Train*>& TicketSystem::getTrains(){
     return trains;
 }
@@ -148,11 +148,18 @@ Train* TicketSystem::searchTrain(int id) {
     return nullptr;
 }
 
+
+/**
+ * @brief Deserializes train data from a file.
+ *
+ * This method reads train data from a file named "train.txt" and populates the train list in the system.
+ * It expects the file to be formatted with train details followed by their schedules and coaches.
+ */
+
 void TicketSystem::desirializeTrain(TicketSystem &ticketSystem, const std::string &filename){
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Failed to open file: " << filename << std::endl;
-        return;
+        throw "Failed to open file";
     }
 
     std::string line;
@@ -163,21 +170,18 @@ void TicketSystem::desirializeTrain(TicketSystem &ticketSystem, const std::strin
             std::string trainType = "";
             bool isFull = false;
 
-            // Read train details
             file >> trainId;
-            file.ignore(); // Ignore the newline
+            file.ignore();
             std::getline(file, trainName);
             std::getline(file, trainType);
             file >> isFull;
-            file.ignore(); // Ignore the newline
+            file.ignore();
 
             Train *train = new Train(trainId, trainName, trainType, isFull);
 
 
-            // Skip the blank line
             std::getline(file, line);
 
-            // Read schedules
             while (std::getline(file, line) && line != "Coaches:") {
                 if (line.empty()) continue;
 
@@ -193,37 +197,37 @@ void TicketSystem::desirializeTrain(TicketSystem &ticketSystem, const std::strin
                 std::stringstream ss(line);
                 int hours, minutes;
                 ss >> hours;
-                ss.ignore(1); // Skip colon (':')
+                ss.ignore(1);
                 ss >> minutes;
                 departureTime = Time(hours, minutes);
 
                 std::getline(file, line);
                 std::stringstream ss2(line);
                 ss2 >> hours;
-                ss2.ignore(1); // Skip colon (':')
+                ss2.ignore(1);
                 ss2 >> minutes;
                 arrivalTime = Time(hours, minutes);
 
                 Schedule *schedule1 = new Schedule(departure, destination, arrivalTime, departureTime);
                 train->addSchedule(*schedule1);
-                // Skip the blank line
+
                 std::getline(file, line);
             }
 
-            // Read coaches
+
             while (std::getline(file, line) && line != "Seats:") {
                 if (line.empty()) continue;
 
                 int coachNumber = std::stoi(line);
                 int numSeats;
                 file >> numSeats;
-                file.ignore(); // Ignore the newline
+                file.ignore();
 
                 Coach *coach = new Coach(coachNumber, numSeats);
 
-                // Read seats
+
                 std::getline(file, line);
-                std::getline(file, line); // Skip the empty line
+                std::getline(file, line);
                 for (int i = 0; i < numSeats; ++i) {
                     int seatNumber = 0, booked = 0;
                     file >> seatNumber >> booked;
@@ -233,7 +237,7 @@ void TicketSystem::desirializeTrain(TicketSystem &ticketSystem, const std::strin
                 }
 
                 train->addCoach(*coach);
-                // Skip the blank line
+
                 std::getline(file, line);
             }
             ticketSystem.addTrain(*train);
@@ -244,7 +248,12 @@ void TicketSystem::desirializeTrain(TicketSystem &ticketSystem, const std::strin
 }
 
 
-
+/**
+ * @brief Deserializes ticket data from a file.
+ *
+ * This method reads ticket data from a file named "ticket.txt" and populates the ticket list in the system.
+ * It expects the file to be formatted with ticket details followed by their associated schedules, trains, coaches, and seats.
+ */
 void TicketSystem::deserializeTicket(TicketSystem &ticketSystem, const std::string &filename){
     std::ifstream infile(filename);
 
@@ -255,7 +264,6 @@ void TicketSystem::deserializeTicket(TicketSystem &ticketSystem, const std::stri
         Time arrivalTime, departureTime;
 
         while (std::getline(infile, line)) {
-            // Skip empty lines
             if (line.empty()) {
                 continue;
             }
@@ -277,7 +285,7 @@ void TicketSystem::deserializeTicket(TicketSystem &ticketSystem, const std::stri
 
                 case 4:
                     ss >> hours;
-                    ss.ignore(1); // Skip colon (':')
+                    ss.ignore(1);
                     ss >> minutes;
                     departureTime.setHours(hours);
                     departureTime.setMinutes(minutes);
@@ -285,7 +293,7 @@ void TicketSystem::deserializeTicket(TicketSystem &ticketSystem, const std::stri
 
                 case 5:
                     ss >> hours;
-                    ss.ignore(1); // Skip colon (':')
+                    ss.ignore(1);
                     ss >> minutes;
                     arrivalTime.setHours(hours);
                     arrivalTime.setMinutes(minutes);
@@ -318,13 +326,11 @@ void TicketSystem::deserializeTicket(TicketSystem &ticketSystem, const std::stri
 
             if (count == 11) {
 
-                // Search for the train
                 Train *train = searchTrain(trainId);
                 if (train == nullptr) {
                     throw "Searching for train was unsuccessful\n";
                 }
 
-                // Search for the coach
                 Coach *coach = nullptr;
                 for (size_t i = 0; i < train->getCoaches().getSize(); i++) {
                     if (train->getCoaches()[i]->getData()->getCoachNumber() == coachNumber) {
@@ -333,23 +339,20 @@ void TicketSystem::deserializeTicket(TicketSystem &ticketSystem, const std::stri
                     }
                 }
 
-                // Create a new coach if not found
                 if (coach == nullptr) {
                     coach = new Coach(coachNumber);
                     train->addCoach(*coach);
                 }
                 Schedule *newSchedule = new Schedule(departure, destination, arrivalTime, departureTime);
                 train->addSchedule(*newSchedule);
-                // Create the seat
+
                 Seat *seat = &coach->getSeats()[seatNumber - 1];
-                seat->bookSeat(); // Mark the seat as booked
-                // Create the new ticket
+                seat->bookSeat();
+
                 Ticket *newTicket = new Ticket(id, newSchedule, train, coach, seat, discount);
 
-                // Add the ticket to the system's ticket list
                 tickets.insert(newTicket);
 
-                // Reset count to start reading the next ticket
                 count = 1;
             } else {
                 count++;
@@ -358,245 +361,6 @@ void TicketSystem::deserializeTicket(TicketSystem &ticketSystem, const std::stri
 
         infile.close();
     } else {
-        std::cout << "File cannot be opened" << std::endl;
+        throw "File cannot be opened";
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * @brief Deserializes train data from a file.
- *
- * This method reads train data from a file named "train.txt" and populates the train list in the system.
- * It expects the file to be formatted with train details followed by their schedules and coaches.
- */
-/*
-void TicketSystem::desirializeTrain(const std::string &filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file: " << filename << std::endl;
-        return;
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line == "Train:") {
-            int trainId = 0;
-            std::string trainName = "";
-            std::string trainType = "";
-            bool isFull = false;
-
-            // Read train details
-            file >> trainId;
-            file.ignore(); // Ignore the newline
-            std::getline(file, trainName);
-            std::getline(file, trainType);
-            file >> isFull;
-            file.ignore(); // Ignore the newline
-
-            Train *train = new Train(trainId, trainName, trainType, isFull);
-            addTrain(*train);
-
-            // Skip the blank line
-            std::getline(file, line);
-
-            // Read schedules
-            while (std::getline(file, line) && line != "Coaches:") {
-                if (line.empty()) continue;
-
-                std::string departure = "";
-                std::string destination = "";
-                Time departureTime, arrivalTime;
-
-                departure = line;
-                std::getline(file, departure);
-                std::getline(file, destination);
-
-                std::getline(file, line);
-                std::stringstream ss(line);
-                int hours, minutes;
-                ss >> hours;
-                ss.ignore(1); // Skip colon (':')
-                ss >> minutes;
-                departureTime = Time(hours, minutes);
-
-                std::getline(file, line);
-                std::stringstream ss2(line);
-                ss2 >> hours;
-                ss2.ignore(1); // Skip colon (':')
-                ss2 >> minutes;
-                arrivalTime = Time(hours, minutes);
-
-                Schedule *schedule = new Schedule(departure, destination, departureTime, arrivalTime);
-                train->addSchedule(*schedule);
-
-                // Skip the blank line
-                std::getline(file, line);
-            }
-
-            // Read coaches
-            while (std::getline(file, line) && line != "Seats:") {
-                if (line.empty()) continue;
-
-                int coachNumber = std::stoi(line);
-                int numSeats;
-                file >> numSeats;
-                file.ignore(); // Ignore the newline
-
-                Coach *coach = new Coach(coachNumber, numSeats);
-
-                // Read seats
-                std::getline(file, line); // Skip "Seats:" line
-                while (std::getline(file, line) && !line.empty()) {
-                    int seatNumber;
-                    file >>seatNumber;
-                    coach->getSeats()[seatNumber - 1].booked();
-                }
-
-                train->addCoach(*coach);
-                // Skip the blank line
-                std::getline(file, line);
-            }
-        }
-    }
-
-    file.close();
-}
-
-
-
-*/
-/**
- * @brief Deserializes ticket data from a file.
- *
- * This method reads ticket data from a file named "ticket.txt" and populates the ticket list in the system.
- * It expects the file to be formatted with ticket details followed by their associated schedules, trains, coaches, and seats.
- *//*
-
-
-void TicketSystem::deserializeTicket(const std::string &filename) {
-    std::ifstream infile(filename);
-
-    if(infile.is_open()){
-        std::string line, departure, destination, trainName, trainType;
-        int id = 0, trainId = 0, coachNumber = 0, seatNumber = 0, hours = 0,minutes = 0, count = 1;
-        double discount = 0;
-        Time arrivalTime, departureTime;
-
-
-        while (std::getline(infile, line)) {
-            // Skip empty lines
-            if (line.empty()) {
-                continue;
-            }
-
-            std::stringstream ss(line);
-
-            switch(count){
-                case 1:
-                    ss >> id;
-                    break;
-
-                case 2:
-                    ss >> departure;
-                    break;
-
-                case 3:
-                    ss >> destination;
-                    break;
-
-                case 4:
-                    ss >> hours;
-                    ss.ignore(1); // Skip colon (':')
-                    ss >> minutes;
-
-                    departureTime.setHours(hours);
-                    departureTime.setMinutes(minutes);
-                    break;
-
-                case 5:
-                    ss >> hours;
-                    ss.ignore(1); // Skip colon (':')
-                    ss >> minutes;
-                    arrivalTime.setHours(hours);
-                    arrivalTime.setMinutes(minutes);
-                    break;
-
-                case 6:
-                    ss >> trainId;
-                    break;
-
-                case 7:
-                    ss >> trainName;
-                    break;
-
-                case 8:
-                    ss >> trainType;
-                    break;
-
-                case 9:
-                    ss >> coachNumber;
-                    break;
-
-                case 10:
-                    ss >> seatNumber;
-                    break;
-
-                case 11:
-                    ss >> discount;
-                    break;
-
-            }
-
-            if(count == 11){
-                Schedule *newSchedule = new Schedule(departure, destination, arrivalTime, departureTime);
-                Train *train = searchTrain(trainId);
-                if(train == nullptr){
-                    delete train;
-                    delete newSchedule;
-                    throw"Seaching for train was unsuccessful\n";
-                }
-                Coach *coach = train->getCoaches()[coachNumber - 1]->getData();
-                Seat *seat = &coach->getSeats()[seatNumber - 1];
-                Ticket *newTicket = new Ticket(id, newSchedule, train, coach, seat, discount);
-                tickets.insert(newTicket);
-                count = 1;
-            }
-            else{
-                count++;
-            }
-        }
-
-        infile.close();
-    } else {
-        std::cout << "File cannot be opened" << std::endl;
-    }
-}
-*/

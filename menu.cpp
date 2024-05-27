@@ -1,15 +1,9 @@
 #include "ticketSystem.h"
+#include "menu.h"
 #include <iostream>
 #include <limits>
 
 // Function declarations
-void displayMenu();
-void handleUserInput(TicketSystem &ticketSystem, bool &exitFlag);
-int getChoice();
-void addTrain(TicketSystem &ticketSystem);
-void searchTrain(TicketSystem &ticketSystem);
-void removeTrain(TicketSystem &ticketSystem);
-
 void displayMenu() {
     std::cout << "Main Menu:\n";
     std::cout << "1. Tickets\n";
@@ -30,6 +24,10 @@ void displayTrainsSubMenu(){
     std::cout<<"3. Add Schedule\n";
     std::cout<<"4. Remove Schedule\n";
 }
+void displayTicketsMenu(){
+    std::cout<<"1. Issue Ticket\n";
+    std::cout<<"2. Delete Ticket\n";
+}
 
 void handleUserInput(TicketSystem &ticketSystem, bool &exitFlag) {
     std::cout << "Enter your choice: ";
@@ -37,13 +35,45 @@ void handleUserInput(TicketSystem &ticketSystem, bool &exitFlag) {
 
     switch (choice) {
         case 1: {
+            displayTicketsMenu();
+            std::cout<<"Enter your choice:\n";
+            int choice = getChoice();
 
+            switch(choice){
+                case 1:{
+                    double discount;
+                    std::string departure, destination;
+                    Time currentTime;
+                    std::cout << "Enter departure station:\n";
+                    std::getline(std::cin, departure);
+                    std::cout << "Enter destination station:\n";
+                    std::getline(std::cin, destination);
+                    std::cout << "Enter time: (h m)\n";
+                    std::cin >> currentTime;
+                    std::cout << "Enter applicable discount in % (e.g. 30):\n";
+                    std::cin >> discount;
+                    std::cin.ignore();
+
+                    Schedule schedule(departure, destination);
+                    ticketSystem.issueTicket(schedule, currentTime, discount / 100);
+
+                    break;
+                }
+                case 2:{
+                    int id;
+                    std::cout<<"Enter ticket's id:\n";
+                    cin>>id;
+                    ticketSystem.removeTicket(id);
+                    std::cout<<"Ticket has been removed\n\n";
+
+                    break;
+                }
+            }
             break;
         }
-        //Kész
         case 2: {
             displayTrainsMenu();
-            std::cout << "Enter your choice: ";
+            std::cout << "Enter your choice:\n";
             int choice = getChoice();
 
             switch(choice){
@@ -62,12 +92,59 @@ void handleUserInput(TicketSystem &ticketSystem, bool &exitFlag) {
             break;
         }
         case 3: {
+            std::string station;
+            std::cout<<"Station's name:\n";
+            std::getline(std::cin, station);
+
+            LinkedList<Train*> stationTrains;
+            Node<Train*> *trainNode = ticketSystem.getTrains().begin();
+
+            while (trainNode != nullptr) {
+                Train* train = trainNode->getData();
+
+                Node<Schedule*> *scheduleNode = train->getSchedule().begin();
+                while (scheduleNode != nullptr) {
+                    Schedule* schedule = scheduleNode->getData();
+                    if (schedule->getDeparture() == station || schedule->getDestination() == station) {
+                        stationTrains.insert(train);
+                        break;
+                    }
+                    scheduleNode = scheduleNode->getNext();
+                }
+
+                trainNode = trainNode->getNext();
+            }
+
+            std::cout<<std::endl;
+            Node<Train*> *stationTrainNode = stationTrains.begin();
+            while (stationTrainNode != nullptr) {
+                Train* train = stationTrainNode->getData();
+                std::cout << *train << std::endl<<std::endl;
+                stationTrainNode = stationTrainNode->getNext();
+            }
 
             break;
         }
         case 4: {
-            exitFlag = true;
+           /* std::ofstream train("train.txt");
+            train.close();
+            Node<Train*> *trainNode = ticketSystem.getTrains().begin();
+            while(trainNode != nullptr){
 
+                trainNode->getData()->serialize("train.txt");
+                trainNode = trainNode->getNext();
+            }
+
+            std::ofstream ticket("ticket.txt");
+            ticket.close();
+            Node<Ticket*> *ticketNode = ticketSystem.getTickets().begin();
+            while(ticketNode != nullptr){
+
+                ticketNode->getData()->serialize("ticket.txt");
+                ticketNode = ticketNode->getNext();
+            }*/
+            exitFlag = true;
+            std::cout << "Exiting program..." << std::endl;
             break;
         }
         default: {
@@ -84,13 +161,10 @@ int getChoice() {
         std::cin >> choice;
 
         if (std::cin.fail()) {
-            // Clear the error flag on cin
             std::cin.clear();
-            // Ignore the rest of the input until a newline is found
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Invalid input, please enter a number.\n";
         } else {
-            // Ignore the rest of the input until a newline is found (to prevent issues with leftover characters)
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return choice;
         }

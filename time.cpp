@@ -38,20 +38,6 @@ bool Time::operator<(const Time &time)const{
     }
 }
 
-Time::Time(const Time &time){
-    if(time.hours > 24){
-        this->hours = time.hours;
-    }
-    else if(time.minutes > 60){
-        this->hours += 1;
-        if(this->hours > 24){
-            this->hours -= 24;
-        }
-    }
-    this->hours = time.hours;
-    this->minutes = time.minutes;
-}
-
 bool Time::operator>(const Time &time) const{
     if(hours > time.hours) {
         return true;
@@ -85,7 +71,7 @@ bool Time::operator<=(const Time &time) const{
 std::ostream& operator<<(std::ostream &os, const Time &time){
     os << time.getHours()<<":";
     if(time.getMinutes() < 10){
-        os<<"0";
+        os<<"0"<<time.getMinutes();
     }else{
         os<<time.getMinutes()<<std::endl;
     }

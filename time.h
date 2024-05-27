@@ -22,7 +22,7 @@ public:
      * @brief Copy constructor for Time class.
      * @param time Reference to another Time object.
      */
-    Time(const Time &time);
+    Time(const Time &time) : hours(time.hours), minutes(time.minutes) {}
 
 
     /**

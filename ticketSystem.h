@@ -40,7 +40,7 @@ public:
      * @param schedule Reference to the schedule.
      * @param time Reference to the time.
      */
-    void issueTicket(Schedule &schedule, const Time &time);
+    void issueTicket(Schedule &schedule, const Time &time, const double discount = 1);
 
     /**
     * @brief Gets the list of trains in the system.
@@ -71,6 +71,9 @@ public:
      */
     void deserializeTicket(TicketSystem &ticketSystem, const std::string &filename);
 
+    /**
+     * @brief Desctructor for deleting trains and tickets
+     */
     ~TicketSystem(){
         // Delete all trains
         Node<Train*> *trainNode = trains.begin();

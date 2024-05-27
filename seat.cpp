@@ -1,11 +1,6 @@
 #include "seat.h"
 #include "memtrace.h"
 
-/**
- * @file seat.cpp
- * @brief Implementation of the Seat class methods.
- */
-
 void Seat::bookSeat(){
     isBooked = true;
 }
